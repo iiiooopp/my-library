@@ -1,0 +1,1 @@
+insert  into `student`(`id`,`name`,`score`,`birthday`) values (5,'孙七',77,'2020-09-18');
