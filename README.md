@@ -1,4 +1,8 @@
+# Spring Cloud Config学习
+
 >#### 原文地址：https://www.cnblogs.com/fengzheng/p/11242128.html
+>#### 原文地址：https://blog.csdn.net/hallowmoon/article/details/100664952
+
 配置文件是我们再熟悉不过的了，尤其是 Spring Boot 项目，除了引入相应的 maven 包之外，剩下的工作就是完善配置文件了，例如 mysql、redis 、security 相关的配置。除了项目运行的基础配置之外，还有一些配置是与我们业务有关系的，比如说七牛存储、短信相关、邮件相关，或者一些业务上的开关。
 
 对于一些简单的项目来说，我们一般都是直接把相关配置放在单独的配置文件中，以 properties 或者 yml 的格式出现，更省事儿的方式是直接放到 application.properties 或 application.yml 中。但是这样的方式有个明显的问题，那就是，当修改了配置之后，必须重启服务，否则配置无法生效。
@@ -378,4 +382,113 @@ public class GitController {
 
 ![image](https://img2018.cnblogs.com/blog/273364/201907/273364-20190725090614229-390401707.png)
 
+>###注意
+这里可能会遇到400的错误，如下：
 
+```json
+{
+    "timestamp": "2020-10-20T05:12:00.063+00:00",
+    "status": 400,
+    "error": "Bad Request",
+    "message": "",
+    "path": "/actuator/refresh"
+}
+```
+
++ #### 原因：
+
+相信有人试过用postman调用是成功，但是使用git的WebHooks调用就无法成功，是因为WebHooks发起的请求中会加入Payload，java在接受到请求后解析这串json出现异常，目的就是将这串body内容置空，代码进行了细微的修改，仅供参考
+
++ #### 解决办法：
+
+客户端新增Filter类：
+
+```java
+import org.springframework.stereotype.Component;
+ 
+import javax.servlet.*;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+ 
+@Component
+public class WebhooksFilter implements Filter {
+ 
+    @Override
+    public void init(FilterConfig filterConfig) throws ServletException {
+ 
+    }
+ 
+    @Override
+    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
+        HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
+        HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
+ 
+        String url = new String(httpServletRequest.getRequestURI());
+ 
+        //只过滤/actuator/refresh
+        if (!url.endsWith("/actuator/refresh")) {
+            filterChain.doFilter(servletRequest, httpServletResponse);
+            return;
+        }
+ 
+        //使用HttpServletRequest包装原始请求达到修改post请求中body内容的目的
+        CustomerRequestWrapper requestWrapper = new CustomerRequestWrapper(httpServletRequest);
+ 
+        filterChain.doFilter(requestWrapper, servletResponse);
+    }
+ 
+    @Override
+    public void destroy() {
+ 
+    }
+}
+```
+
+客户端新增Wrapper类：
+
+```java
+import javax.servlet.ReadListener;
+import javax.servlet.ServletInputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+ 
+public class CustomerRequestWrapper extends HttpServletRequestWrapper {
+    public CustomerRequestWrapper(HttpServletRequest request) {
+        super(request);
+    }
+ 
+    @Override
+    public ServletInputStream getInputStream() throws IOException {
+ 
+        byte[] bytes = new byte[0];
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
+ 
+        return new ServletInputStream() {
+            @Override
+            public boolean isFinished() {
+                return byteArrayInputStream.read() == -1 ? true : false;
+            }
+ 
+            @Override
+            public boolean isReady() {
+                return false;
+            }
+ 
+            @Override
+            public void setReadListener(ReadListener readListener) {
+ 
+            }
+ 
+            @Override
+            public int read() throws IOException {
+                return byteArrayInputStream.read();
+            }
+        };
+    }
+}
+```
+
+重启，问题解决。
