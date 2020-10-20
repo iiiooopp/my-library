@@ -28,13 +28,13 @@
 
 首先，我们需要准备好一个空的数据库。（数据库的安装和账密配置此处忽略）
 
-此处以mysql为例，在本地电脑上新建一个空的数据库，名称叫做flyway，我们通过dbeaver看到的样子如下：
+此处以mysql为例，在本地电脑上新建一个空的数据库，名称叫做test，我们通过dbeaver看到的样子如下：
 
 ![image](image/1603096004(1).png)
 
 #### 3.2 准备SpringBoot工程
 
-在start.spring.io上新建一个SpringBoot工程，要求能连上自己本地新建的mysql数据库flyway，这个步骤也比较简单，就不再细讲。
+新建一个SpringBoot工程，要求能连上自己本地新建的mysql数据库test，这个步骤也比较简单，就不再细讲。
 
 但要注意的是，application.properties中数据库的配置务必配置正确，下述步骤中系统启动时，flyway需要凭借这些配置连接到数据库。这里贴一份：
 
