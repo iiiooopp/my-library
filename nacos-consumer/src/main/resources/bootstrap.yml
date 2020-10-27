@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: nacos-consumer #服务名称
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848 #注册中心地址
+      config:
+        server-addr: 127.0.0.1:8848 #配置中心地址
+        file-extension: yml #配置文件类型
+#        namespace: cbc398b4-0266-4501-b23f-77332ced56b4 #指定该命名空间下的配置
+#        group: group_dev #指定该组下的配置
+
+feign:
+  hystrix:
+    enabled: true #在feign中开启 Hystrix(熔断器)
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*' #公开端点的ID。 默认： health, info
+      base-path: / #对于网络端点的基本路径。 默认： /actuator
+
+hystrix:
+  dashboard:
+    proxy-stream-allow-list: '*' #开启Hystrix可视化监控需要添加此项
