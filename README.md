@@ -5,3 +5,7 @@
 >## Flyway 模块学习
 
 + ###### https://github.com/iiiooopp/my-library/tree/flyway
+
+>## Nacos-feign-hystrix 模块学习
+
++ ###### https://github.com/iiiooopp/my-library/tree/nacos-feign-hystrix
