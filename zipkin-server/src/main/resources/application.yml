@@ -1,0 +1,17 @@
+server:
+  port: 3000
+spring:
+  application:
+    name: kite-eureka-center
+eureka:
+  instance:
+    hostname: eureka-center # 主机名
+    appname: eureka-server # 获取要在eureka注册的应用程序的名称
+  client:
+    registerWithEureka: false # 单点的时候设置为 false 禁止注册自身
+    fetchRegistry: false # 是否从eureka服务器获取注册信息
+    serviceUrl:
+      defaultZone: http://localhost:3000/eureka # 设置eureka服务器所在的地址，查询服务和注册服务都需要依赖这个地址
+  server:
+    enableSelfPreservation: false # 是否开启注册中心自我保护机制
+    evictionIntervalTimerInMs: 4000 # 注册中心清理间隔（单位毫秒）
